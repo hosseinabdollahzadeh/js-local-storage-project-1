@@ -11,6 +11,9 @@ loadEventListeners();
 // Load all event listener
 function loadEventListeners() {
 
+    // DOM load event
+    document.addEventListener('DOMContentLoaded', getTasks);
+
     // Add task event
     form.addEventListener('submit', addTask);
 
@@ -22,6 +25,34 @@ function loadEventListeners() {
 
     // Filter tasks
     filter.addEventListener('keyup', filterTasks);
+}
+
+// Get tasks from local storage
+function getTasks() {
+    let tasks;
+    if (localStorage.getItem('tasks') === null) {
+        tasks = [];
+    } else {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+
+    tasks.forEach(function (task) {
+        // Create li element
+        const li = document.createElement('li');
+        // Add class
+        li.className = 'list-group-item d-flex align-items-center';
+        // Create text node and append to li
+        li.appendChild(document.createTextNode(task));
+        // Create i element
+        const i = document.createElement('i');
+        // Add class
+        i.className = 'fas fa-times text-danger mr-auto delete-item';
+        // Append the i to li
+        li.appendChild(i);
+
+        // Append li to ul
+        taskList.appendChild(li);
+    });
 }
 
 // Add task
@@ -45,6 +76,8 @@ function addTask(e) {
         // Append li to ul
         taskList.appendChild(li);
 
+        // Store in Local Storage
+        storeTaskInLocalStorage(taskInput.value);
         //Clear input
         taskInput.value = '';
 
@@ -52,18 +85,60 @@ function addTask(e) {
     }
 }
 
+// Store task
+function storeTaskInLocalStorage(task) {
+    // console.log(task);
+
+    let tasks;
+    if (localStorage.getItem('tasks') === null) {
+        tasks = [];
+    } else {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+
+    tasks.push(task);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
 // Remove Task
 function removeTask(e) {
     if (e.target.classList.contains('delete-item')) {
         if (confirm('آیا برای حذف تسک مطمئن هستید؟')) {
             e.target.parentElement.remove();
+            // Remove from local storage
+            removeTaskFromLocalStorage(e.target.parentElement);
         }
     }
+}
+
+// Remove task from local storage
+function removeTaskFromLocalStorage(taskItem) {
+    let tasks;
+    if (localStorage.getItem('tasks') === null) {
+        tasks = [];
+    } else {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+
+    tasks.forEach(function (task, index) {
+        if (taskItem.textContent === task) {
+            tasks.splice(index, 1);
+        }
+    });
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 // Clear tasks
 function clearTasks() {
     taskList.innerHTML = '';
+    // Clear from local storage
+    clearTasksFromLocalStorage();
+}
+
+// Clear task from local storage
+function clearTasksFromLocalStorage(){
+    localStorage.clear();
 }
 
 // Filter tasks
